@@ -4,7 +4,6 @@ int main() {
     int vertice1, vertice2;
     int i, j;
 
-    // 1) LER GRAFO 1
     printf("Digite o numero de vertices do grafo 1: ");
     scanf("%d", &vertice1);
     while(vertice1 <= 0) {
@@ -12,7 +11,7 @@ int main() {
         scanf("%d", &vertice1);
     }
 
-    int g1[vertice1][vertice1]; // Criando a matriz dinamicamente sem ponteiro
+    int g1[vertice1][vertice1]; // Criando a matriz
 
     printf("Digite a matriz de adjacencia do grafo 1:\n");
     for(i = 0; i < vertice1; i++){
@@ -25,7 +24,6 @@ int main() {
         }
     }
 
-    // 2) LER GRAFO 2
     printf("\nDigite o numero de vertices do grafo 2: ");
     scanf("%d", &vertice2);
     while(vertice2 <= 0) {
@@ -46,13 +44,12 @@ int main() {
         }
     }
 
-    // --- TESTE 1: Número de vértices ---
     if(vertice1 != vertice2){
         printf("\nNao sao isomorfos - Numero de vertices diferente\n");
         return 0;
     }
 
-    // --- TESTE 2: Número de arestas ---
+    //numero de arestas
     int e1 = 0, e2 = 0;
     for(i = 0; i < vertice1; i++){
         for(j = 0; j < vertice1; j++){
@@ -60,17 +57,12 @@ int main() {
             if(g2[i][j] == 1) e2++;
         }
     }
-    
-    // Divide por 2 porque a matriz conta ida e volta
-    e1 = e1 / 2;
-    e2 = e2 / 2;
 
     if(e1 != e2){
         printf("\nNao sao isomorfos - Numero de arestas diferente\n");
         return 0;
     }
 
-    // --- TESTE 3: Sequência de Graus ---
     int grau1[vertice1], grau2[vertice1];
     for(i = 0; i < vertice1; i++){
         grau1[i] = 0;
@@ -81,7 +73,6 @@ int main() {
         }
     }
 
-    // Ordenar os graus do menor para o maior (Bubble Sort)
     for(i = 0; i < vertice1 - 1; i++){
         for(j = 0; j < vertice1 - 1; j++){
             if(grau1[j] > grau1[j+1]){
@@ -97,7 +88,6 @@ int main() {
         }
     }
 
-    // Comparar os graus ordenados
     for(i = 0; i < vertice1; i++){
         if(grau1[i] != grau2[i]){
             printf("\nNao sao isomorfos - Sequencia de graus diferente\n");
@@ -105,8 +95,7 @@ int main() {
         }
     }
 
-    // Se sobreviveu a todos os testes
-    printf("\nOs grafos PODEM ser isomorfos\n");
+    printf("\nOs grafos podem ser isomorfos\n");
 
     return 0;
 }

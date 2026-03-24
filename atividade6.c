@@ -4,7 +4,6 @@ int main() {
     int vertice;
     int i, j;
 
-    // 1) LER E VALIDAR VÉRTICES
     printf("Digite o numero de vertices do grafo: ");
     scanf("%d", &vertice);
     while(vertice <= 0) {
@@ -16,26 +15,31 @@ int main() {
     int graus[vertice];
     int simples = 1;
 
-    // 2) LER MATRIZ E VALIDAR GRAFO SIMPLES
     printf("Digite a matriz de adjacencia:\n");
     for(i = 0; i < vertice; i++){
-        graus[i] = 0; // Zera o grau para garantir
+        graus[i] = 0;
         for(j = 0; j < vertice; j++){
             scanf("%d", &adj[i][j]);
-            
-            // Aceita apenas 0 ou 1
             while(adj[i][j] != 0 && adj[i][j] != 1) {
                  printf("Valor invalido - digite 0 ou 1\n");
                  scanf("%d", &adj[i][j]);
              }
-             
-             // Não pode ter laço na diagonal principal
-             if(i == j && adj[i][j] == 1) {
-                 simples = 0; 
-             }
-             
-             // Soma os graus
              graus[i] += adj[i][j];
+        }
+    }
+    for(i = 0; i < j; i++){
+        if(adj[i][i] != 0){
+            printf("grafo nao e simples\n");
+            return 0;
+        }
+    }
+
+    for(i = 0; i < vertice; i++){
+        for(j = 0; j < vertice; j++){
+            if(adj[i][j] != adj[j][i]){
+                printf("grafo nao e simples\n");
+                return 0;
+            }
         }
     }
 
@@ -44,7 +48,6 @@ int main() {
         return 0;
     }
 
-    // 3) A LÓGICA DE EULER (Contar vértices de grau Ímpar)
     int impares = 0;
     for(i = 0; i < vertice; i++){
         if(graus[i] % 2 != 0) {
@@ -52,7 +55,6 @@ int main() {
         }
     }
 
-    // 4) RESULTADOS EXATOS
     printf("\n");
     if(impares == 0) {
         printf("O grafo possui ciclo euleriano\n");
