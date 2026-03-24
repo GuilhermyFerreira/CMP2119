@@ -1,87 +1,112 @@
 #include <stdio.h>
-#include <stdlib.h>
-//Verificação de Isomorfismo
-
-// Função auxiliar para ordenar o vetor de graus (Bubble Sort)
-void ordenarGraus(int *vetor, int tamanho) {
-    for (int i = 0; i < tamanho - 1; i++) {
-        for (int j = 0; j < tamanho - i - 1; j++) {
-            if (vetor[j] > vetor[j+1]) {
-                int temp = vetor[j];
-                vetor[j] = vetor[j+1];
-                vetor[j+1] = temp;
-            }
-        }
-    }
-}
 
 int main() {
-    int v1, v2;
+    int vertice1, vertice2;
+    int i, j;
 
-    printf("Vertices do Grafo 1: "); scanf("%d", &v1);
-    printf("Vertices do Grafo 2: "); scanf("%d", &v2);
+    // 1) LER GRAFO 1
+    printf("Digite o numero de vertices do grafo 1: ");
+    scanf("%d", &vertice1);
+    while(vertice1 <= 0) {
+        printf("Numero invalido, digite um valor maior que 0: ");
+        scanf("%d", &vertice1);
+    }
 
-    // Condição 1: Número de vértices deve ser igual
-    if (v1 != v2) {
-        printf("\nNao podem ser isomorfos (numero de vertices diferente).\n");
+    int g1[vertice1][vertice1]; // Criando a matriz dinamicamente sem ponteiro
+
+    printf("Digite a matriz de adjacencia do grafo 1:\n");
+    for(i = 0; i < vertice1; i++){
+        for(j = 0; j < vertice1; j++){
+            scanf("%d", &g1[i][j]);
+            while(g1[i][j] != 0 && g1[i][j] != 1) {
+                 printf("Valor invalido - digite 0 ou 1\n");
+                 scanf("%d", &g1[i][j]);
+             }
+        }
+    }
+
+    // 2) LER GRAFO 2
+    printf("\nDigite o numero de vertices do grafo 2: ");
+    scanf("%d", &vertice2);
+    while(vertice2 <= 0) {
+        printf("Numero invalido, digite um valor maior que 0: ");
+        scanf("%d", &vertice2);
+    }
+
+    int g2[vertice2][vertice2];
+
+    printf("Digite a matriz de adjacencia do grafo 2:\n");
+    for(i = 0; i < vertice2; i++){
+        for(j = 0; j < vertice2; j++){
+            scanf("%d", &g2[i][j]);
+            while(g2[i][j] != 0 && g2[i][j] != 1) {
+                 printf("Valor invalido - digite 0 ou 1\n");
+                 scanf("%d", &g2[i][j]);
+             }
+        }
+    }
+
+    // --- TESTE 1: Número de vértices ---
+    if(vertice1 != vertice2){
+        printf("\nNao sao isomorfos - Numero de vertices diferente\n");
         return 0;
     }
 
-    int v = v1;
-    int *grausG1 = calloc(v, sizeof(int));
-    int *grausG2 = calloc(v, sizeof(int));
-    int arestasG1 = 0, arestasG2 = 0;
-    int temp;
+    // --- TESTE 2: Número de arestas ---
+    int e1 = 0, e2 = 0;
+    for(i = 0; i < vertice1; i++){
+        for(j = 0; j < vertice1; j++){
+            if(g1[i][j] == 1) e1++;
+            if(g2[i][j] == 1) e2++;
+        }
+    }
+    
+    // Divide por 2 porque a matriz conta ida e volta
+    e1 = e1 / 2;
+    e2 = e2 / 2;
 
-    // Lendo Grafo 1 (Adjacência) e somando graus
-    printf("\nDigite a matriz de adjacencia do Grafo 1:\n");
-    for (int i = 0; i < v; i++) {
-        for (int j = 0; j < v; j++) {
-            scanf("%d", &temp);
-            if (temp == 1) {
-                grausG1[i]++;
-                arestasG1++;
+    if(e1 != e2){
+        printf("\nNao sao isomorfos - Numero de arestas diferente\n");
+        return 0;
+    }
+
+    // --- TESTE 3: Sequência de Graus ---
+    int grau1[vertice1], grau2[vertice1];
+    for(i = 0; i < vertice1; i++){
+        grau1[i] = 0;
+        grau2[i] = 0;
+        for(j = 0; j < vertice1; j++){
+            grau1[i] += g1[i][j];
+            grau2[i] += g2[i][j];
+        }
+    }
+
+    // Ordenar os graus do menor para o maior (Bubble Sort)
+    for(i = 0; i < vertice1 - 1; i++){
+        for(j = 0; j < vertice1 - 1; j++){
+            if(grau1[j] > grau1[j+1]){
+                int temp = grau1[j];
+                grau1[j] = grau1[j+1];
+                grau1[j+1] = temp;
+            }
+            if(grau2[j] > grau2[j+1]){
+                int temp = grau2[j];
+                grau2[j] = grau2[j+1];
+                grau2[j+1] = temp;
             }
         }
     }
 
-    // Lendo Grafo 2 e somando graus
-    printf("\nDigite a matriz de adjacencia do Grafo 2:\n");
-    for (int i = 0; i < v; i++) {
-        for (int j = 0; j < v; j++) {
-            scanf("%d", &temp);
-            if (temp == 1) {
-                grausG2[i]++;
-                arestasG2++;
-            }
+    // Comparar os graus ordenados
+    for(i = 0; i < vertice1; i++){
+        if(grau1[i] != grau2[i]){
+            printf("\nNao sao isomorfos - Sequencia de graus diferente\n");
+            return 0;
         }
     }
 
-    // Condição 2: Número de arestas deve ser igual
-    if (arestasG1 != arestasG2) {
-        printf("\nNao podem ser isomorfos (numero de arestas diferente).\n");
-        free(grausG1); free(grausG2);
-        return 0;
-    }
+    // Se sobreviveu a todos os testes
+    printf("\nOs grafos PODEM ser isomorfos\n");
 
-    // Condição 3: Sequência de graus deve ser idêntica
-    ordenarGraus(grausG1, v);
-    ordenarGraus(grausG2, v);
-
-    int podemSer = 1;
-    for (int i = 0; i < v; i++) {
-        if (grausG1[i] != grausG2[i]) {
-            podemSer = 0;
-            break;
-        }
-    }
-
-    if (podemSer) {
-        printf("\nOs grafos PODEM ser isomorfos (possuem a mesma sequencia de graus).\n");
-    } else {
-        printf("\nOs grafos NAO PODEM ser isomorfos (sequencia de graus diferente).\n");
-    }
-
-    free(grausG1); free(grausG2);
     return 0;
 }

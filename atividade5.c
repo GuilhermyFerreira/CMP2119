@@ -1,87 +1,102 @@
 #include <stdio.h>
-#include <stdlib.h>
-// Classificação (Ciclo, Completo ou Roda)
 
-// Função auxiliar para ordenar o vetor de graus (Bubble Sort)
-void ordenarGraus(int *vetor, int tamanho) {
-    for (int i = 0; i < tamanho - 1; i++) {
-        for (int j = 0; j < tamanho - i - 1; j++) {
-            if (vetor[j] > vetor[j+1]) {
-                int temp = vetor[j];
-                vetor[j] = vetor[j+1];
-                vetor[j+1] = temp;
-            }
-        }
-    }
-}
+int main(){
+    int num_vertices, linha, coluna;
 
-int main() {
-    int v1, v2;
-
-    printf("Vertices do Grafo 1: "); scanf("%d", &v1);
-    printf("Vertices do Grafo 2: "); scanf("%d", &v2);
-
-    // Condição 1: Número de vértices deve ser igual
-    if (v1 != v2) {
-        printf("\nNao podem ser isomorfos (numero de vertices diferente).\n");
-        return 0;
+    // Pedindo a quantidade de vértices
+    printf("Informe a quantidade de vertices do grafo: ");
+    scanf("%d", &num_vertices);
+    
+    while(num_vertices <= 0) {
+        printf("Quantidade invalida! Digite um numero estritamente positivo:\n");
+        scanf("%d", &num_vertices);
     }
 
-    int v = v1;
-    int *grausG1 = calloc(v, sizeof(int));
-    int *grausG2 = calloc(v, sizeof(int));
-    int arestasG1 = 0, arestasG2 = 0;
-    int temp;
+    // Usando VLA para criar a matriz com o tamanho exato
+    int grafo[num_vertices][num_vertices];
 
-    // Lendo Grafo 1 (Adjacência) e somando graus
-    printf("\nDigite a matriz de adjacencia do Grafo 1:\n");
-    for (int i = 0; i < v; i++) {
-        for (int j = 0; j < v; j++) {
-            scanf("%d", &temp);
-            if (temp == 1) {
-                grausG1[i]++;
-                arestasG1++;
-            }
+    printf("Preencha a matriz de adjacencia:\n");
+
+    for(linha = 0; linha < num_vertices; linha++){
+        for(coluna = 0; coluna < num_vertices; coluna++){
+            scanf("%d", &grafo[linha][coluna]);
+            
+            // Validação de entrada
+            while(grafo[linha][coluna] != 0 && grafo[linha][coluna] != 1) {
+                 printf("Erro: Para grafos simples, utilize apenas 0 ou 1.\n");
+                 printf("Insira o valor novamente:\n");
+                 scanf("%d", &grafo[linha][coluna]);
+             }
         }
     }
 
-    // Lendo Grafo 2 e somando graus
-    printf("\nDigite a matriz de adjacencia do Grafo 2:\n");
-    for (int i = 0; i < v; i++) {
-        for (int j = 0; j < v; j++) {
-            scanf("%d", &temp);
-            if (temp == 1) {
-                grausG2[i]++;
-                arestasG2++;
-            }
+    // Calculando a quantidade de conexões (grau) de cada vértice
+    int conexoes[num_vertices];
+    
+    for(linha = 0; linha < num_vertices; linha++){
+        conexoes[linha] = 0;
+        for(coluna = 0; coluna < num_vertices; coluna++){
+            conexoes[linha] += grafo[linha][coluna];
         }
     }
 
-    // Condição 2: Número de arestas deve ser igual
-    if (arestasG1 != arestasG2) {
-        printf("\nNao podem ser isomorfos (numero de arestas diferente).\n");
-        free(grausG1); free(grausG2);
-        return 0;
-    }
+    // --- Verificacao: Grafo Ciclo ---
+    int eh_ciclo = 1;
 
-    // Condição 3: Sequência de graus deve ser idêntica
-    ordenarGraus(grausG1, v);
-    ordenarGraus(grausG2, v);
+    if(num_vertices < 3) eh_ciclo = 0;
 
-    int podemSer = 1;
-    for (int i = 0; i < v; i++) {
-        if (grausG1[i] != grausG2[i]) {
-            podemSer = 0;
-            break;
+    for(linha = 0; linha < num_vertices; linha++){
+        if(conexoes[linha] != 2){
+            eh_ciclo = 0;
         }
     }
 
-    if (podemSer) {
-        printf("\nOs grafos PODEM ser isomorfos (possuem a mesma sequencia de graus).\n");
+    // --- Verificacao: Grafo Completo ---
+    int eh_completo = 1;
+
+    for(linha = 0; linha < num_vertices; linha++){
+        if(conexoes[linha] != num_vertices - 1){
+            eh_completo = 0;
+        }
+    }
+
+    // --- Verificacao: Grafo Roda ---
+    int eh_roda = 1;
+    int eixo = 0; // Contabiliza quem é o centro da roda
+
+    for(linha = 0; linha < num_vertices; linha++){
+        if(conexoes[linha] == num_vertices - 1){
+            eixo++;
+        }
+    }
+
+    if(eixo != 1){
+        eh_roda = 0;
     } else {
-        printf("\nOs grafos NAO PODEM ser isomorfos (sequencia de graus diferente).\n");
+        for(linha = 0; linha < num_vertices; linha++){
+            if(conexoes[linha] != num_vertices - 1 && conexoes[linha] != 3){
+                eh_roda = 0;
+            }
+        }
     }
 
-    free(grausG1); free(grausG2);
+    // --- Exibindo os Resultados ---
+    printf("\n--- Resultados da Analise ---\n");
+    
+    if(eh_ciclo)
+        printf("Classificacao: Grafo Ciclo\n");
+    else
+        printf("O grafo NAO e um Ciclo\n");
+
+    if(eh_completo)
+        printf("Classificacao: Grafo Completo\n");
+    else
+        printf("O grafo NAO e Completo\n");
+
+    if(eh_roda)
+        printf("Classificacao: Grafo Roda\n");
+    else
+        printf("O grafo NAO e uma Roda\n");
+
     return 0;
 }
