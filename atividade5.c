@@ -27,6 +27,22 @@ int main(){
         }
     }
 
+    for(int i = 0; i < num_vertices; i++){
+        if(grafo[i][i] != 0){
+            printf("grafo nao e simples\n");
+            return 0;
+        }
+    }
+
+    for(int i = 0; i < num_vertices; i++){
+        for(int j = 0; j < num_vertices; j++){
+            if(grafo[i][j] != grafo[j][i]){
+                printf("grafo nao e simples\n");
+                return 0;
+            }
+        }
+    }
+
     int conexoes[num_vertices];
     
     for(linha = 0; linha < num_vertices; linha++){

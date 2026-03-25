@@ -24,6 +24,24 @@ int main() {
         }
     }
 
+
+    for(int i = 0; i < vertice1; i++){
+        if(g1[i][i] != 0){
+            printf("grafo nao e simples\n");
+            return 0;
+        }
+    }
+
+    for(int i = 0; i < vertice1; i++){
+        for(int j = 0; j < vertice1; j++){
+            if(g1[i][j] != g1[j][i]){
+                printf("grafo nao e simples\n");
+                return 0;
+            }
+        }
+    }
+
+
     printf("\nDigite o numero de vertices do grafo 2: ");
     scanf("%d", &vertice2);
     while(vertice2 <= 0) {
@@ -41,6 +59,22 @@ int main() {
                  printf("Valor invalido - digite 0 ou 1\n");
                  scanf("%d", &g2[i][j]);
              }
+        }
+    }
+
+    for(int i = 0; i < vertice2; i++){
+        if(g2[i][i] != 0){
+            printf("grafo nao e simples\n");
+            return 0;
+        }
+    }
+
+    for(int i = 0; i < vertice2; i++){
+        for(int j = 0; j < vertice2; j++){
+            if(g2[i][j] != g2[j][i]){
+                printf("grafo nao e simples\n");
+                return 0;
+            }
         }
     }
 
