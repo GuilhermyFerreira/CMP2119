@@ -1,98 +1,114 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    int *vizinhos;
+    int quantidade;
+} ListaAdjacencia;
 
 int main() {
-    int v, i, j;
+    int vertices;
 
-    printf("Introduza o numero de vertices do grafo simples: ");
-    scanf("%d", &v);
-    while(v <= 0) {
-        printf("Invalido. Introduza um valor maior que 0: ");
-        scanf("%d", &v);
+    printf("Digite o numero de vertices do grafo simples: ");
+    scanf("%d", &vertices);
+    while (vertices <= 0) {
+        printf("Numero invalido. Digite novamente: ");
+        scanf("%d", &vertices);
     }
 
-    int quantidade[v];
-    int lista[v][v];
+    ListaAdjacencia *lista = malloc(vertices * sizeof(ListaAdjacencia));
 
-    // 1) LER A LISTA DE ADJACÊNCIA
-    printf("\n--- Preenchimento da Lista de Adjacencia ---\n");
-    for(i = 0; i < v; i++) {
-        printf("Quantos vizinhos o vertice %d tem? ", i);
-        scanf("%d", &quantidade[i]);
-        while(quantidade[i] < 0 || quantidade[i] >= v) {
-            printf("Invalido! (Num grafo simples, o maximo de vizinhos e %d): ", v-1);
-            scanf("%d", &quantidade[i]);
+    // Entrada da Lista
+    for (int i = 0; i < vertices; i++) {
+        printf("\nQuantos vertices estao ligados ao vertice %d? ", i);
+        scanf("%d", &lista[i].quantidade);
+
+        while (lista[i].quantidade < 0 || lista[i].quantidade >= vertices){
+            printf("Invalido! (Maximo %d): ", vertices - 1);   
+            scanf("%d", &lista[i].quantidade);
         }
 
-        if(quantidade[i] > 0) {
-            printf("Digite os %d vizinhos do vertice %d: ", quantidade[i], i);
-            for(j = 0; j < quantidade[i]; j++) {
-                scanf("%d", &lista[i][j]);
+        if (lista[i].quantidade > 0) {
+            lista[i].vizinhos = malloc(lista[i].quantidade * sizeof(int));
+
+            printf("Digite os vertices ligados ao vertice %d:\n", i);
+            for (int j = 0; j < lista[i].quantidade; j++) {
+                scanf("%d", &lista[i].vizinhos[j]);
+
+                while (lista[i].vizinhos[j] < 0 || lista[i].vizinhos[j] >= vertices) {
+                    printf("Vertice invalido. Digite novamente: ");
+                    scanf("%d", &lista[i].vizinhos[j]);
+                }
             }
-        }
+        } //else {
+            //lista[i].vizinhos = NULL;
+        //}
     }
 
-    // 2) VALIDAÇÃO DE GRAFO SIMPLES
+    // Validação de Grafo Simples usando a sua Struct
     int eh_simples = 1;
-    for(i = 0; i < v; i++) {
-        for(j = 0; j < quantidade[i]; j++) {
-            int vizinho = lista[i][j];
+    for (int i = 0; i < vertices; i++) {
+        for (int j = 0; j < lista[i].quantidade; j++) {
+            int vizinho = lista[i].vizinhos[j];
 
-            // Verificacao 1: Laço (Aponta para si mesmo)
-            if(vizinho == i) eh_simples = 0;
-
-            // Verificacao 2: Aresta Múltipla (Vizinho repetido na mesma lista)
-            for(int k = j + 1; k < quantidade[i]; k++) {
-                if(lista[i][k] == vizinho) eh_simples = 0;
+            // 1. Checa Laço
+            if (vizinho == i){
+                eh_simples = 0;
             }
-
-            // Verificacao 3: Simetria (Se 'i' aponta para 'vizinho', o 'vizinho' tem de apontar para 'i')
+        
+            // 2. Checa Simetria
             int tem_volta = 0;
-            for(int k = 0; k < quantidade[vizinho]; k++) {
-                if(lista[vizinho][k] == i) tem_volta = 1;
+            for (int k = 0; k < lista[vizinho].quantidade; k++) {
+                if (lista[vizinho].vizinhos[k] == i) tem_volta = 1;
             }
-            if(tem_volta == 0) eh_simples = 0;
+            if (tem_volta == 0) eh_simples = 0;
         }
     }
 
     if (eh_simples == 0) {
         printf("\nERRO: A lista inserida nao forma um grafo simples.\n");
-        printf("(Verifique se existem lacos, repeticoes ou se esqueceu de colocar a volta de alguma aresta).\n");
+        
+        // Limpa antes de sair
+        for (int i = 0; i < vertices; i++) {
+            if (lista[i].quantidade > 0) {
+                free(lista[i].vizinhos);
+            }
+        }
+        free(lista);
         return 0; 
     }
 
-    // 3) DFS ITERATIVA COM PILHA DUPLA
-    int visitado[v];
-    for(i = 0; i < v; i++) visitado[i] = 0;
-
+    // Lógica do DFS Iterativo (Grafo Simples com Pilha Dupla)
+    int *visitado = calloc(vertices, sizeof(int));
+    
     int tem_ciclo = 0;
-
-    int pilha_v[v * v];
-    int pilha_pai[v * v]; 
+    int *pilha_v = malloc(vertices * vertices * sizeof(int));
+    int *pilha_pai = malloc(vertices * vertices * sizeof(int));
     int topo = 0;
 
-    for(int inicio = 0; inicio < v; inicio++) {
-        if(visitado[inicio] == 0 && tem_ciclo == 0) {
+    for (int inicio = 0; inicio < vertices; inicio++) {
+        if (visitado[inicio] == 0 && tem_ciclo == 0) {
             
             pilha_v[topo] = inicio;
             pilha_pai[topo] = -1; // Sem pai
             topo++;
 
-            while(topo > 0) {
+            while (topo > 0) {
                 topo--;
                 int atual = pilha_v[topo];
                 int pai_do_atual = pilha_pai[topo];
 
-                if(visitado[atual] == 0) {
+                if (visitado[atual] == 0) {
                     visitado[atual] = 1; 
 
-                    // MUDANÇA AQUI: Percorre apenas a lista do vértice
-                    for (int k = 0; k < quantidade[atual]; k++) {
-                        int vizinho = lista[atual][k];
+                    // MUDANÇA: Percorre os vizinhos usando a sua struct
+                    for (int j = 0; j < lista[atual].quantidade; j++) {
+                        int vizinho = lista[atual].vizinhos[j];
                         
-                        // Encontrou um visitado que NÃO é o pai (é um ciclo!)
+                        // Achou um visitado que NÃO é o pai
                         if (visitado[vizinho] == 1 && vizinho != pai_do_atual) {
                             tem_ciclo = 1;
-                            topo = 0; // Esvazia para sair
+                            topo = 0; 
                             break;
                         }
                         
@@ -107,9 +123,16 @@ int main() {
         }
     }
 
-    printf("\n--- Resultado DFS Simples ---\n");
+    printf("\n--- Resultado DFS ---\n");
     if (tem_ciclo) printf("O grafo simples POSSUI um ciclo.\n");
     else printf("O grafo simples NAO possui ciclos.\n");
+
+    // Limpeza de Memória
+    for (int i = 0; i < vertices; i++) {
+        if (lista[i].quantidade > 0) free(lista[i].vizinhos);
+    }
+    free(lista);
+    free(visitado); free(pilha_v); free(pilha_pai);
 
     return 0;
 }

@@ -1,89 +1,90 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+// Sua Struct Original
+typedef struct {
+    int *vizinhos;
+    int quantidade;
+} ListaAdjacencia;
 
 int main() {
-    int v, i, j;
+    int vertices;
 
-    printf("Introduza o numero de vertices do grafo direcionado: ");
-    scanf("%d", &v);
-    while(v <= 0) {
-        printf("Invalido. Introduza um valor maior que 0: ");
-        scanf("%d", &v);
+    printf("Digite o numero de vertices do grafo direcionado: ");
+    scanf("%d", &vertices);
+    while (vertices <= 0) {
+        printf("Numero invalido. Digite novamente: ");
+        scanf("%d", &vertices);
     }
 
-    // A nossa Lista de Adjacência sem ponteiros
-    int quantidade[v];
-    int lista[v][v];
+    ListaAdjacencia *lista = malloc(vertices * sizeof(ListaAdjacencia));
 
-    printf("\n--- Preenchimento da Lista de Adjacencia ---\n");
-    for(i = 0; i < v; i++) {
-        printf("Quantos vizinhos o vertice %d tem? ", i);
-        scanf("%d", &quantidade[i]);
-        
-        while(quantidade[i] < 0 || quantidade[i] > v) {
-            printf("Invalido! O numero deve ser entre 0 e %d: ", v);
-            scanf("%d", &quantidade[i]);
+    // Entrada da Lista
+    for (int i = 0; i < vertices; i++) {
+        printf("\nQuantos vertices estao ligados ao vertice %d? ", i);
+        scanf("%d", &lista[i].quantidade);
+
+        while (lista[i].quantidade < 0 || lista[i].quantidade > vertices){
+            printf("Quantidade invalida. Tente novamente: ");   
+            scanf("%d", &lista[i].quantidade);
         }
 
-        if(quantidade[i] > 0) {
-            printf("Digite os %d vizinhos do vertice %d (separados por espaco): ", quantidade[i], i);
-            for(j = 0; j < quantidade[i]; j++) {
-                scanf("%d", &lista[i][j]);
-                // Valida se o vizinho existe
-                while(lista[i][j] < 0 || lista[i][j] >= v) {
-                    printf("Vertice invalido! Digite um vizinho entre 0 e %d: ", v-1);
-                    scanf("%d", &lista[i][j]);
+        if (lista[i].quantidade > 0) {
+            lista[i].vizinhos = malloc(lista[i].quantidade * sizeof(int));
+
+            printf("Digite os vertices ligados ao vertice %d:\n", i);
+            for (int j = 0; j < lista[i].quantidade; j++) {
+                scanf("%d", &lista[i].vizinhos[j]);
+
+                while (lista[i].vizinhos[j] < 0 || lista[i].vizinhos[j] >= vertices) {
+                    printf("Vertice invalido. Digite novamente: ");
+                    scanf("%d", &lista[i].vizinhos[j]);
                 }
             }
+        } else {
+            lista[i].vizinhos = NULL; // Previne erros se a quantidade for 0
         }
     }
 
-    int visitado[v];
-    int na_trilha[v]; // Marca quem está no caminho atual
-    for(i = 0; i < v; i++) {
-        visitado[i] = 0;
-        na_trilha[i] = 0;
-    }
-
+    // Lógica do DFS Iterativo (Direcionado)
+    int *visitado = calloc(vertices, sizeof(int));
+    int *na_trilha = calloc(vertices, sizeof(int));
+    
     int tem_ciclo = 0;
-
-    // A nossa Pilha Iterativa (Tamanho máximo = v * 2)
-    int pilha[v * 2];
-    int acoes[v * 2]; 
+    int *pilha = malloc(vertices * 2 * sizeof(int));
+    int *acoes = malloc(vertices * 2 * sizeof(int));
     int topo = 0;
 
-    // Inicia a DFS
-    for(int inicio = 0; inicio < v; inicio++) {
-        if(visitado[inicio] == 0 && tem_ciclo == 0) {
+    for (int inicio = 0; inicio < vertices; inicio++) {
+        if (visitado[inicio] == 0 && tem_ciclo == 0) {
             
             pilha[topo] = inicio;
-            acoes[topo] = 0; // Ação 0: Entrar/Explorar
+            acoes[topo] = 0; 
             topo++;
 
-            while(topo > 0) {
+            while (topo > 0) {
                 topo--;
                 int atual = pilha[topo];
                 int acao = acoes[topo];
 
-                if(acao == 1) {
-                    // Ação 1: Já terminamos de explorar, tira da trilha
-                    na_trilha[atual] = 0;
+                if (acao == 1) {
+                    na_trilha[atual] = 0; // Tira da trilha
                 } 
                 else if (visitado[atual] == 0) {
                     visitado[atual] = 1;  
                     na_trilha[atual] = 1;
 
-                    // Re-empilha para tirar da trilha no final
                     pilha[topo] = atual;
                     acoes[topo] = 1;
                     topo++;
 
-                    // MUDANÇA AQUI: Percorremos apenas a lista de vizinhos do vértice atual!
-                    for (int k = 0; k < quantidade[atual]; k++) {
-                        int vizinho = lista[atual][k];
+                    // MUDANÇA: Usa a sua struct para percorrer os vizinhos
+                    for (int j = 0; j < lista[atual].quantidade; j++) {
+                        int vizinho = lista[atual].vizinhos[j];
                         
                         if (na_trilha[vizinho] == 1) {
-                            tem_ciclo = 1; // Encontramos um ciclo!
-                            topo = 0; // Força a saída do While
+                            tem_ciclo = 1; 
+                            topo = 0; 
                             break;
                         }
                         
@@ -98,9 +99,16 @@ int main() {
         }
     }
 
-    printf("\n--- Resultado DFS Direcionado ---\n");
+    printf("\n--- Resultado DFS ---\n");
     if (tem_ciclo) printf("O grafo direcionado POSSUI um ciclo.\n");
     else printf("O grafo direcionado NAO possui ciclos.\n");
+
+    // Limpeza de Memória
+    for (int i = 0; i < vertices; i++) {
+        if (lista[i].quantidade > 0) free(lista[i].vizinhos);
+    }
+    free(lista);
+    free(visitado); free(na_trilha); free(pilha); free(acoes);
 
     return 0;
 }
