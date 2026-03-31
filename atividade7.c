@@ -17,6 +17,11 @@ int main() {
         scanf("%d", &vertices);
     }
 
+    if (vertices < 3) {
+        printf("Grafo nao pode conter ciclo (considerando ciclos simples de 3+ vertices)\n");
+        return 0;
+    }
+
     ListaAdjacencia *lista = malloc(vertices * sizeof(ListaAdjacencia));
 
     // Entrada da Lista
@@ -24,7 +29,7 @@ int main() {
         printf("\nQuantos vertices estao ligados ao vertice %d? ", i);
         scanf("%d", &lista[i].quantidade);
 
-        while (lista[i].quantidade < 0 || lista[i].quantidade > vertices-1){
+        while (lista[i].quantidade < 0 || lista[i].quantidade > vertices - 1){
             printf("Quantidade invalida. Tente novamente: ");   
             scanf("%d", &lista[i].quantidade);
         }
@@ -44,7 +49,16 @@ int main() {
         }
     }
 
-    // Lógica do DFS Iterativo (Direcionado)
+    int vertice_inicial;
+    printf("\nDigite o vertice de onde deseja iniciar a busca (0 a %d): ", vertices - 1);
+    scanf("%d", &vertice_inicial);
+    
+    while (vertice_inicial < 0 || vertice_inicial >= vertices) {
+        printf("Vertice invalido. Digite novamente (0 a %d): ", vertices - 1);
+        scanf("%d", &vertice_inicial);
+    }
+
+    // DFS
     int *visitado = calloc(vertices, sizeof(int));
     int *na_trilha = calloc(vertices, sizeof(int));
     
@@ -52,56 +66,52 @@ int main() {
     int *pilha = malloc(vertices * 2 * sizeof(int));
     int *acoes = malloc(vertices * 2 * sizeof(int));
     int topo = 0;
+    
+    pilha[topo] = vertice_inicial;
+    acoes[topo] = 0; 
+    topo++;
 
-    for (int inicio = 0; inicio < vertices; inicio++) {
-        if (visitado[inicio] == 0 && tem_ciclo == 0) {
-            
-            pilha[topo] = inicio;
-            acoes[topo] = 0; 
+    while (topo > 0) {
+        topo--;
+        int atual = pilha[topo];
+        int acao = acoes[topo];
+
+        if (acao == 1) {
+            na_trilha[atual] = 0; // Tira da trilha
+        }
+        else if (visitado[atual] == 0) {
+            visitado[atual] = 1;  
+            na_trilha[atual] = 1;
+
+            pilha[topo] = atual;
+            acoes[topo] = 1;
             topo++;
 
-            while (topo > 0) {
-                topo--;
-                int atual = pilha[topo];
-                int acao = acoes[topo];
-
-                if (acao == 1) {
-                    na_trilha[atual] = 0; // Tira da trilha
+            for (int j = 0; j < lista[atual].quantidade; j++) {
+                int vizinho = lista[atual].vizinhos[j];
+                
+                if (na_trilha[vizinho] == 1) {
+                    tem_ciclo = 1; 
+                    topo = 0; 
+                    break;
                 }
-                else if (visitado[atual] == 0) {
-                    visitado[atual] = 1;  
-                    na_trilha[atual] = 1;
-
-                    pilha[topo] = atual;
-                    acoes[topo] = 1;
+                
+                if (visitado[vizinho] == 0) {
+                    pilha[topo] = vizinho;
+                    acoes[topo] = 0;
                     topo++;
-
-                    // MUDANÇA: Usa a sua struct para percorrer os vizinhos
-                    for (int j = 0; j < lista[atual].quantidade; j++) {
-                        int vizinho = lista[atual].vizinhos[j];
-                        
-                        if (na_trilha[vizinho] == 1) {
-                            tem_ciclo = 1; 
-                            topo = 0; 
-                            break;
-                        }
-                        
-                        if (visitado[vizinho] == 0) {
-                            pilha[topo] = vizinho;
-                            acoes[topo] = 0;
-                            topo++;
-                        }
-                    }
                 }
             }
         }
     }
 
     printf("\n--- Resultado DFS ---\n");
-    if (tem_ciclo) printf("O grafo direcionado POSSUI um ciclo.\n");
-    else printf("O grafo direcionado NAO possui ciclos.\n");
+    if (tem_ciclo) {
+        printf("O grafo direcionado POSSUI um ciclo acessivel a partir do vertice %d.\n", vertice_inicial);
+    } else {
+        printf("O grafo direcionado NAO possui ciclos a partir do vertice %d.\n", vertice_inicial);
+    }
 
-    // Limpeza de Memória
     for (int i = 0; i < vertices; i++) {
         if (lista[i].quantidade > 0) free(lista[i].vizinhos);
     }

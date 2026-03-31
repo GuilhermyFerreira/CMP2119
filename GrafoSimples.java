@@ -1,5 +1,3 @@
-Atvidade 8 
-
 import java.util.Scanner;
 
 class ListaAdjacenciaSimples {

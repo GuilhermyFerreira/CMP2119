@@ -16,6 +16,11 @@ int main() {
         scanf("%d", &vertices);
     }
 
+    if (vertices < 3){
+        printf("Grafo nao pode conter ciclo\n");
+        return 0;
+    }
+
     ListaAdjacencia *lista = malloc(vertices * sizeof(ListaAdjacencia));
 
     // Entrada da Lista
@@ -41,18 +46,16 @@ int main() {
         }
     }
 
-    // Validação de Grafo Simples usando a sua Struct
+    // Validação de Grafo Simples
     int eh_simples = 1;
     for (int i = 0; i < vertices; i++) {
         for (int j = 0; j < lista[i].quantidade; j++) {
             int vizinho = lista[i].vizinhos[j];
 
-            // 1. Checa Laço
             if (vizinho == i){
                 eh_simples = 0;
             }
         
-            // 2. Checa Simetria
             int tem_volta = 0;
             for (int k = 0; k < lista[vizinho].quantidade; k++) {
                 if (lista[vizinho].vizinhos[k] == i) {
@@ -68,7 +71,6 @@ int main() {
     if (eh_simples == 0) {
         printf("\nERRO: A lista inserida nao forma um grafo simples.\n");
         
-        // Limpa antes de sair
         for (int i = 0; i < vertices; i++) {
             if (lista[i].quantidade > 0) {
                 free(lista[i].vizinhos);
@@ -78,61 +80,64 @@ int main() {
         return 0; 
     }
 
-    // Lógica do DFS Iterativo (Grafo Simples com Pilha Dupla)
-    int *visitado = calloc(vertices, sizeof(int));
+    int vertice_inicial;
+    printf("\nDigite o vertice de onde deseja iniciar a busca (0 a %d): ", vertices - 1);
+    scanf("%d", &vertice_inicial);
     
+    while (vertice_inicial < 0 || vertice_inicial >= vertices) {
+        printf("Vertice invalido. Digite novamente (0 a %d): ", vertices - 1);
+        scanf("%d", &vertice_inicial);
+    }
+
+    // DFS
+    int *visitado = calloc(vertices, sizeof(int));    
     int tem_ciclo = 0;
     int *pilha_v = malloc(vertices * vertices * sizeof(int));
-    int *pilha_pai = malloc(vertices * vertices * sizeof(int));
+    int *anterior = malloc(vertices * vertices * sizeof(int));
     int topo = 0;
 
-    for (int inicio = 0; inicio < vertices; inicio++) {
-        if (visitado[inicio] == 0 && tem_ciclo == 0) {
-            
-            pilha_v[topo] = inicio;
-            pilha_pai[topo] = -1; // Sem pai
-            topo++;
+    pilha_v[topo] = vertice_inicial;
+    anterior[topo] = -1; 
+    topo++;
 
-            while (topo > 0) {
-                topo--;
-                int atual = pilha_v[topo];
-                int pai_do_atual = pilha_pai[topo];
+    while (topo > 0) {
+        topo--;
+        int atual = pilha_v[topo];
+        int anteriorAtual = anterior[topo];
 
-                if (visitado[atual] == 0) {
-                    visitado[atual] = 1; 
+        if (visitado[atual] == 0) {
+            visitado[atual] = 1; 
 
-                    // MUDANÇA: Percorre os vizinhos usando a sua struct
-                    for (int j = 0; j < lista[atual].quantidade; j++) {
-                        int vizinho = lista[atual].vizinhos[j];
-                        
-                        // Achou um visitado que NÃO é o pai
-                        if (visitado[vizinho] == 1 && vizinho != pai_do_atual) {
-                            tem_ciclo = 1;
-                            topo = 0; 
-                            break;
-                        }
-                        
-                        if (visitado[vizinho] == 0) {
-                            pilha_v[topo] = vizinho;
-                            pilha_pai[topo] = atual; 
-                            topo++;
-                        }
-                    }
+            for (int j = 0; j < lista[atual].quantidade; j++) {
+                int vizinho = lista[atual].vizinhos[j];
+
+                if (visitado[vizinho] == 1 && vizinho != anteriorAtual) {
+                    tem_ciclo = 1;
+                    topo = 0; 
+                    break;
+                }
+                
+                if (visitado[vizinho] == 0) {
+                    pilha_v[topo] = vizinho;
+                    anterior[topo] = atual; 
+                    topo++;
                 }
             }
         }
     }
 
     printf("\n--- Resultado DFS ---\n");
-    if (tem_ciclo) printf("O grafo simples POSSUI um ciclo.\n");
-    else printf("O grafo simples NAO possui ciclos.\n");
+    if (tem_ciclo) {
+        printf("O grafo simples POSSUI um ciclo acessivel a partir do vertice %d.\n", vertice_inicial);
+    } else {
+        printf("O grafo simples NAO possui ciclos a partir do vertice %d.\n", vertice_inicial);
+    }
 
-    // Limpeza de Memória
     for (int i = 0; i < vertices; i++) {
         if (lista[i].quantidade > 0) free(lista[i].vizinhos);
     }
     free(lista);
-    free(visitado); free(pilha_v); free(pilha_pai);
+    free(visitado); free(pilha_v); free(anterior);
 
     return 0;
 }
