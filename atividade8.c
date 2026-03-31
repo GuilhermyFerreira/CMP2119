@@ -23,26 +23,22 @@ int main() {
         printf("\nQuantos vertices estao ligados ao vertice %d? ", i);
         scanf("%d", &lista[i].quantidade);
 
-        while (lista[i].quantidade < 0 || lista[i].quantidade >= vertices){
+        while (lista[i].quantidade < 0 || lista[i].quantidade >= vertices-1){
             printf("Invalido! (Maximo %d): ", vertices - 1);   
             scanf("%d", &lista[i].quantidade);
         }
-
         if (lista[i].quantidade > 0) {
             lista[i].vizinhos = malloc(lista[i].quantidade * sizeof(int));
 
             printf("Digite os vertices ligados ao vertice %d:\n", i);
             for (int j = 0; j < lista[i].quantidade; j++) {
                 scanf("%d", &lista[i].vizinhos[j]);
-
                 while (lista[i].vizinhos[j] < 0 || lista[i].vizinhos[j] >= vertices) {
                     printf("Vertice invalido. Digite novamente: ");
                     scanf("%d", &lista[i].vizinhos[j]);
                 }
             }
-        } //else {
-            //lista[i].vizinhos = NULL;
-        //}
+        }
     }
 
     // Validação de Grafo Simples usando a sua Struct
@@ -59,9 +55,13 @@ int main() {
             // 2. Checa Simetria
             int tem_volta = 0;
             for (int k = 0; k < lista[vizinho].quantidade; k++) {
-                if (lista[vizinho].vizinhos[k] == i) tem_volta = 1;
+                if (lista[vizinho].vizinhos[k] == i) {
+                    tem_volta = 1;
+                }
             }
-            if (tem_volta == 0) eh_simples = 0;
+            if (tem_volta == 0) {
+                eh_simples = 0;
+            }
         }
     }
 

@@ -24,7 +24,7 @@ int main() {
         printf("\nQuantos vertices estao ligados ao vertice %d? ", i);
         scanf("%d", &lista[i].quantidade);
 
-        while (lista[i].quantidade < 0 || lista[i].quantidade > vertices){
+        while (lista[i].quantidade < 0 || lista[i].quantidade > vertices-1){
             printf("Quantidade invalida. Tente novamente: ");   
             scanf("%d", &lista[i].quantidade);
         }
@@ -41,8 +41,6 @@ int main() {
                     scanf("%d", &lista[i].vizinhos[j]);
                 }
             }
-        } else {
-            lista[i].vizinhos = NULL; // Previne erros se a quantidade for 0
         }
     }
 
@@ -69,7 +67,7 @@ int main() {
 
                 if (acao == 1) {
                     na_trilha[atual] = 0; // Tira da trilha
-                } 
+                }
                 else if (visitado[atual] == 0) {
                     visitado[atual] = 1;  
                     na_trilha[atual] = 1;
