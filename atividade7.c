@@ -77,7 +77,7 @@ int main() {
         int acao = acoes[topo];
 
         if (acao == 1) {
-            na_trilha[atual] = 0; // Tira da trilha
+            na_trilha[atual] = 0;
         }
         else if (visitado[atual] == 0) {
             visitado[atual] = 1;  
